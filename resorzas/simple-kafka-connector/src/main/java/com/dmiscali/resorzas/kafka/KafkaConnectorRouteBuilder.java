@@ -20,22 +20,28 @@ import org.apache.camel.builder.RouteBuilder;
 
 public class KafkaConnectorRouteBuilder extends RouteBuilder {
 
-    @Override
+	@Override
     public void configure() throws Exception {
-
-        from("timer://foo?period={{period}}")
-        .setBody(constant("Hi This is Avro example"))
-        .process(new KafkaMessageProducerProcessor())
-            .to("kafka:{{producer.topic}}?"
-            		+ "brokers={{kafka.bootstrap.url}}"
-            		+ "&keySerializerClass=org.apache.kafka.common.serialization.StringSerializer"
-            		+ "&serializerClass=org.apache.kafka.common.serialization.StringSerializer");
-
-        from("kafka:{{consumer.topic}}?"
-        		+ "brokers={{kafka.bootstrap.url}}"
-        		+ "&keyDeserializer=org.apache.kafka.common.serialization.StringDeserializer"
-        		+ "&valueDeserializer=org.apache.kafka.common.serialization.StringSerializer")
-         .process(new KafkaMessageConsumerProcessor())
-            .log("${body}");
+//
+//        from("timer://foo?period={{period}}")
+//        .setBody(constant("Hi This is Avro example"))
+//        .process(new KafkaMessageProducerProcessor())
+//            .to("kafka:{{producer.topic}}?"
+//            		+ "brokers={{kafka.bootstrap.url}}"
+//            		+ "&keySerializerClass=org.apache.kafka.common.serialization.StringSerializer"
+//            		+ "&serializerClass=org.apache.kafka.common.serialization.StringSerializer");
+//
+//        from("kafka:{{consumer.topic}}?"
+//        		+ "brokers={{kafka.bootstrap.url}}"
+//        		+ "&keyDeserializer=org.apache.kafka.common.serialization.StringDeserializer"
+//        		+ "&valueDeserializer=org.apache.kafka.common.serialization.StringDeserializer")
+//         .process(new KafkaMessageConsumerProcessor())
+//            .log("${body}");
+        
+        
+        
+//		from("weblogicJmsComponent:queue:{{tt.queue}}")
+		from("weblogicJMS:{{tt.queue}}")
+        .log("${body}");
     }
 }
