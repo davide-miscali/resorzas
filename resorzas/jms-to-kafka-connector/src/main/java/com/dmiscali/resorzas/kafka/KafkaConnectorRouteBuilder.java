@@ -27,7 +27,7 @@ public class KafkaConnectorRouteBuilder extends RouteBuilder {
 		
 	from("weblogicJMS:{{tt.queue}}").id("gpl-from-JMS-to-Kafka")
        .log("${body}")
-    .to("kafka:{{q.topic}}?"
+    .to("kafka:{{kafka.topic}}?"
 		+ "brokers={{kafka.bootstrap.url}}"
 		+ "&keySerializerClass=org.apache.kafka.common.serialization.StringSerializer"
 		+ "&serializerClass=org.apache.kafka.common.serialization.StringSerializer");

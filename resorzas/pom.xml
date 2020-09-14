@@ -34,7 +34,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>simple-kafka-connector</module>
         <module>jms-to-kafka-connector</module>
         <module>kafka-to-file-connector</module>
     </modules>

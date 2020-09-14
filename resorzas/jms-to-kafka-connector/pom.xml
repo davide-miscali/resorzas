@@ -15,6 +15,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<spring.boot-version>${spring-boot-version}</spring.boot-version>
+		<launch.name>${project.artifactId}-${project.version}</launch.name>
 	</properties>
 
 	<dependencyManagement>
@@ -193,14 +194,9 @@
 
 	<build>
 		<plugins>
-			<!-- JMS Client does not work with version 11 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
 			</plugin>
 
 			<plugin>
@@ -212,6 +208,30 @@
 						<goals>
 							<goal>repackage</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<!-- here the phase you need -->
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources/launch</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

@@ -11,24 +11,7 @@
 
 	<bean class="com.dmiscali.resorzas.kafka.KafkaConnectorRouteBuilder" id="kafkaConnectorRouteBuilder" />
 
-<!-- 	<bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent"> -->
-<!-- 		<property name="location" value="classpath:application.properties" /> -->
-<!-- 	</bean> -->
-
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:application.properties" />
-	</bean>
-
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-		<!-- <propertyPlaceholder id="placeholder" location="classpath:application.properties" /> -->
-
-
-		<!-- <propertyPlaceholder id="placeholder" location="file:${spring.config.location}" /> -->
-		<!-- <propertyPlaceholder id="gpl-properties"> -->
-		<!-- <propertiesLocation resolver="classpath" path="classpath:application.properties" optional="false" /> -->
-		<!-- <propertiesLocation resolver="file" path="file:gpl-application.properties" optional="false" /> -->
-		<!-- </propertyPlaceholder> -->
-
 		<routeBuilder ref="kafkaConnectorRouteBuilder" />
 	</camelContext>
 </beans>

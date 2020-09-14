@@ -32,7 +32,6 @@
     <!-- End JMS part -->
     <bean class="com.dmiscali.resorzas.kafka.KafkaConnectorRouteBuilder" id="kafkaConnectorRouteBuilder"/>
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-        <propertyPlaceholder id="placeholder" location="classpath:application.properties"/>
         <routeBuilder ref="kafkaConnectorRouteBuilder"/>
     </camelContext>
 </beans>

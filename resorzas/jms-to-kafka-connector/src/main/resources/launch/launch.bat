@@ -3,7 +3,7 @@
 IF [%1] == [] GOTO Error
 
 @echo on
-java -jar kafka-to-file-connector-1.0.0.jar --spring.config.location=%1
+java -jar ${launch.name}.jar --spring.config.location=%1
 @echo off
 
 GOTO End
