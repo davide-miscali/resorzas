@@ -30,10 +30,13 @@
     <groupId>com.dmiscali.resorzas</groupId>
     <artifactId>resorzas</artifactId>
     <name>resorzas</name>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <modules>
         <module>simple-kafka-connector</module>
+        <module>jms-to-kafka-connector</module>
+        <module>kafka-to-file-connector</module>
     </modules>
 
     <properties>

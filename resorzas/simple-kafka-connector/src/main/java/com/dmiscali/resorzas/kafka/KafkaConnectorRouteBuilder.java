@@ -24,7 +24,7 @@ public class KafkaConnectorRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
 //
 //        from("timer://foo?period={{period}}")
-//        .setBody(constant("Hi This is Avro example"))
+//        .setBody(constant("Hi This is an example"))
 //        .process(new KafkaMessageProducerProcessor())
 //            .to("kafka:{{producer.topic}}?"
 //            		+ "brokers={{kafka.bootstrap.url}}"
@@ -39,9 +39,24 @@ public class KafkaConnectorRouteBuilder extends RouteBuilder {
 //            .log("${body}");
         
         
-        
-//		from("weblogicJmsComponent:queue:{{tt.queue}}")
-		from("weblogicJMS:{{tt.queue}}")
-        .log("${body}");
+        //Bridge from WebLogic JMS Queue to Kafka Topic
+		
+	from("weblogicJMS:{{tt.queue}}").id("gpl-from-JMS-to-Kafka")
+       .log("${body}")
+    .to("kafka:{{q.topic}}?"
+		+ "brokers={{kafka.bootstrap.url}}"
+		+ "&keySerializerClass=org.apache.kafka.common.serialization.StringSerializer"
+		+ "&serializerClass=org.apache.kafka.common.serialization.StringSerializer");
+		
+		//Bridge from WebLogic Kafka Topic to filesystem
+		
+	from("kafka:{{consumer.topic}}?"
+		+ "brokers={{kafka.bootstrap.url}}"
+		+ "&keyDeserializer=org.apache.kafka.common.serialization.StringDeserializer"
+		+ "&valueDeserializer=org.apache.kafka.common.serialization.StringDeserializer").id("gpl-from-Kafka-to-file")
+//	.process(new KafkaMessageConsumerProcessor())
+	.log("${body}")
+	.to("{{consumer.spool-path}}");
+      
     }
 }
