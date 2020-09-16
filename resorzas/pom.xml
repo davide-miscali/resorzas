@@ -36,6 +36,7 @@
     <modules>
         <module>jms-to-kafka-connector</module>
         <module>kafka-to-file-connector</module>
+        <module>kafka-dynamic-router</module>
     </modules>
 
     <properties>
