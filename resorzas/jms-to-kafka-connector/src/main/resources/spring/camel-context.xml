@@ -9,9 +9,9 @@
         <property name="environment">
             <props>
                 <prop key="java.naming.factory.initial">weblogic.jndi.WLInitialContextFactory</prop>
-                <prop key="java.naming.provider.url">${tt.url}</prop>
-                <prop key="java.naming.security.principal">${tt.principal}</prop>
-                <prop key="java.naming.security.credentials">${tt.credentials}</prop>
+                <prop key="java.naming.provider.url">${wljms.url}</prop>
+                <prop key="java.naming.security.principal">${wljms.principal}</prop>
+                <prop key="java.naming.security.credentials">${wljms.credentials}</prop>
             </props>
         </property>
     </bean>
@@ -20,7 +20,7 @@
     </bean>
     <bean class="org.springframework.jndi.JndiObjectFactoryBean" id="jmsConnectionFactory">
         <property name="jndiTemplate" ref="jmsJndiTemplate"/>
-        <property name="jndiName" value="${tt.cf}"/>
+        <property name="jndiName" value="${wljms.cf}"/>
     </bean>
     <bean class="org.apache.camel.component.jms.JmsConfiguration" id="jmsConfiguration">
         <property name="connectionFactory" ref="jmsConnectionFactory"/>

@@ -25,12 +25,19 @@ public class KafkaConnectorRouteBuilder extends RouteBuilder {
        
         //Bridge from WebLogic JMS Queue to Kafka Topic
 		
-	from("weblogicJMS:{{tt.queue}}").id("gpl-from-JMS-to-Kafka")
+	from("weblogicJMS:{{wljms.queue}}").id("gpl-from-JMS-to-Kafka")
        .log("${body}")
     .to("kafka:{{kafka.topic}}?"
 		+ "brokers={{kafka.bootstrap.url}}"
 		+ "&keySerializerClass=org.apache.kafka.common.serialization.StringSerializer"
 		+ "&serializerClass=org.apache.kafka.common.serialization.StringSerializer");
+	
+	errorHandler(deadLetterChannel("weblogicJMS:{{wljms.error-queue}}")
+            .maximumRedeliveries(3)
+            .redeliveryDelay(1000)
+            .backOffMultiplier(2)
+            .useOriginalMessage()
+            .useExponentialBackOff());
 		
     }
 }
