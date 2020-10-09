@@ -5,9 +5,9 @@
 		<artifactId>resorzas</artifactId>
 		<version>1.0.0</version>
 	</parent>
-	<artifactId>kafka-dynamic-router</artifactId>
-	<name>Kafka :: Dynamic :: Router</name>
-	<description>connector to route Kafka Messages from a topic to other topics</description>
+	<artifactId>kafka-to-jms-connector</artifactId>
+	<name>JMS :: to :: Kafka :: Connector</name>
+	<description>connector for bridging messages from WebLogic JMS queue to Kafka topic</description>
 
 
 	<properties>
@@ -57,9 +57,23 @@
 			<artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.camel.springboot</groupId>
-			<artifactId>camel-jsonpath-starter</artifactId>
-			<!-- use the same version as your Camel core version -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-actuator</artifactId>
+		</dependency>
+		<!-- Spring Boot -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -77,7 +91,6 @@
 			<artifactId>camel-core-starter</artifactId>
 			<version>${camel-version}</version>
 		</dependency>
-
 		<!-- Camel -->
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>
@@ -89,19 +102,6 @@
 			<artifactId>camel-stream-starter</artifactId>
 			<version>${camel-version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.camel.springboot</groupId>
-			<artifactId>camel-file-starter</artifactId>
-			<version>${camel-version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-<!-- 			<version>2.3.4</version> -->
-			<scope>test</scope>
-		</dependency>
-
 
 		<!-- camel -->
 		<dependency>
@@ -117,14 +117,79 @@
 			<artifactId>camel-support</artifactId>
 		</dependency>
 
+
+		<!-- JMS -->
+
 		<dependency>
 			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-jsonpath</artifactId>
+			<artifactId>camel-jms</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>wlthint3client</artifactId>
+			<version>12.1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>cryptoj</artifactId>
+			<version>6.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.corba</groupId>
+			<artifactId>glassfish-corba-omgapi</artifactId>
+			<version>4.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.corba</groupId>
+			<artifactId>glassfish-corba-orb</artifactId>
+			<!-- <version>3.1.0-b001</version> -->
+			<version>4.2.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.glassfish.corba/glassfish-corba -->
+		<dependency>
+			<groupId>org.glassfish.corba</groupId>
+			<artifactId>glassfish-corba</artifactId>
+			<version>4.2.0</version>
+			<type>pom</type>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.codehaus.jsr166-mirror/jsr166 -->
+		<dependency>
+			<groupId>org.codehaus.jsr166-mirror</groupId>
+			<artifactId>jsr166</artifactId>
+			<version>1.7.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.glassfish.gmbal/gmbal-api-only -->
+		<dependency>
+			<groupId>org.glassfish.gmbal</groupId>
+			<artifactId>gmbal-api-only</artifactId>
+			<version>4.0.2</version>
 		</dependency>
 
 
 
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>2.0.1.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>javax.el-api</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>5.4.1.Final</version>
+		</dependency>
 
+		<!-- end JMS -->
 	</dependencies>
 
 	<build>
@@ -172,5 +237,7 @@
 			</plugin>
 		</plugins>
 	</build>
+
+
 
 </project>

@@ -10,5 +10,5 @@ GOTO End
 
 :Error
 echo Hit an error; Could be parameters are missing?
-echo Expected use is to specify the property file eg: "gpl-application.properties"
+echo Expected use is to specify the property file eg: "gpl-application.yml"
 :End

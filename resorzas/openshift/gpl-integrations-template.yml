@@ -1,0 +1,232 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: gpl-integrations
+  
+parameters:
+- description: Git Source Repository
+  name: SOURCE_REPOSITORY
+  value: http://gitlab.rete.poste/gpl/quintiq/dynamic_routing/lp.git
+  required: true
+- description: Git Source reference
+  name: SOURCE_REF
+  value: feature/integration
+  required: true
+- description: Git Source secret
+  name: SOURCE_SECRET
+  value: git-dmiscali
+  required: true  
+- description: Country Service data directory
+  name: DATA_DIRECTORY
+  value: /gpl/data
+  required: true
+  
+  
+  
+  
+  
+  
+objects:
+  #BuildConfig
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: kafka-to-file-connector
+      delete: blog
+    name: kafka-to-file-connector
+  spec:
+    
+    
+    output:
+      to:
+        kind: ImageStreamTag
+        name: kafka-to-file-connector:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: ${SOURCE_REF}
+        uri: ${SOURCE_REPOSITORY}
+      sourceSecret:
+        name: ${SOURCE_SECRET}
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: MAVEN_ARGS_APPEND
+          value: -pl kafka-to-file-connector --also-make
+        - name: ARTIFACT_DIR
+          value: kafka-to-file-connector/target/
+        - name: MODULE_DIR
+          value: kafka-to-file-connector
+        from:
+          kind: ImageStreamTag
+          name: 'java:8'
+          namespace: openshift
+      type: Source
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+    - type: ConfigChange
+  status: {}
+  
+  #DeploymentConfig
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: kafka-to-file
+      application: kafka-to-file
+      template: gpl-integrations
+      xpaas: 1.4.14
+    name: kafka-to-file-connector
+    namespace: gpl-integration
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: kafka-to-file-connector
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: kafka-to-file-connector
+          delete: blog
+          deploymentconfig: kafka-to-file-connector
+      spec:
+        containers:
+        - env:
+          - name: DATA_DIRECTORY
+            value: ${DATA_DIRECTORY}
+          image: kafka-to-file-connector
+          imagePullPolicy: Always
+          name: kafka-to-file-connector
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 384Mi
+            requests:
+              cpu: 250m
+              memory: 128Mi
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+            - mountPath: /gpl/data
+              name: volume-gpl-data
+            - mountPath: /deployments/config
+              name: volume-gpl-k2f-config
+        hostAliases:
+          - hostnames:
+              - kafka1
+            ip: 10.60.36.7
+          - hostnames:
+              - kafka2
+            ip: 10.60.36.11
+          - hostnames:
+              - kafka3
+            ip: 10.60.36.12
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+          - name: volume-gpl-data
+            persistentVolumeClaim:
+              claimName: gpl-data
+          - configMap:
+              defaultMode: 420
+              name: gpl-k2f-config
+            name: volume-gpl-k2f-config
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - kafka-to-file-connector
+        from:
+          kind: ImageStreamTag
+          name: kafka-to-file-connector:latest
+      type: ImageChange
+    - type: ConfigChange
+  status: {}
+  #ImageStream
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: kafka-to-file-connector
+    name: kafka-to-file-connector
+  spec:
+    tags:
+    - annotations: null
+      from:
+        kind: DockerImage
+        name: kafka-to-file-connector:latest
+      generation: null
+      importPolicy: {}
+      name: latest
+  status: {}
+  #Service  
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: kafka-to-file-connector
+      delete: blog
+    name: kafka-to-file-connector
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: 8778-tcp
+      port: 8778
+      protocol: TCP
+      targetPort: 8778
+    selector:
+      deploymentconfig: kafka-to-file-connector
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+  #Route  
+- apiVersion: v1
+  kind: Route
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: kafka-to-file-connector
+      delete: blog
+    name: kafka-to-file-connector
+  spec:
+    to:
+      kind: Service
+      name: kafka-to-file-connector
+    port:
+      targetPort: 8080-tcp
+  status: {}

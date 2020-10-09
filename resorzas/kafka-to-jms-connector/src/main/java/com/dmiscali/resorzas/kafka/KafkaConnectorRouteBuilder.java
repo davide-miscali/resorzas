@@ -17,42 +17,27 @@
 package com.dmiscali.resorzas.kafka;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.kafka.KafkaConstants;
-import org.apache.camel.jsonpath.JsonPath;
 
 public class KafkaConnectorRouteBuilder extends RouteBuilder {
 
 	@Override
     public void configure() throws Exception {
-
-		//Bridge from WebLogic Kafka Topic to filesystem
+       
+        //Bridge from WebLogic JMS Queue to Kafka Topic
 		
-	from("kafka:{{consumer.topic}}?"
-		+ "brokers={{kafka.bootstrap.url}}"
-		+ "&keyDeserializer=org.apache.kafka.common.serialization.StringDeserializer"
-		+ "&valueDeserializer=org.apache.kafka.common.serialization.StringDeserializer").id("gpl-from-Kafka-to-file")
-//	.process(new KafkaMessageRouterProcessor())
-	.convertBodyTo(String. class)
-	.log("RECEVIED:\n${body}")
-	.to("direct:get-out-topic")
-    .to("kafka:{{routingmap.defaultDestination}}?"
+	from("kafka:{{kafka.topic}}?"
 		+ "brokers={{kafka.bootstrap.url}}"
 		+ "&keySerializerClass=org.apache.kafka.common.serialization.StringSerializer"
-		+ "&serializerClass=org.apache.kafka.common.serialization.StringSerializer");
-    
+		+ "&serializerClass=org.apache.kafka.common.serialization.StringSerializer")
+			.log("${body}")
+			.to("weblogicJMS:{{wljms.queue}}").id("gpl-from-JMS-to-Kafka");
 	
-	from("direct:get-out-topic")
-		.log("RECEVIED:\n${body}")
-		//get code_id
-		.setHeader("input-code").jsonpath("{{routingmap.jsonpathInputKey}}")
-//		.jsonpath("$.depot_code")
+	errorHandler(deadLetterChannel("weblogicJMS:{{wljms.error-queue}}")
+            .maximumRedeliveries(3)
+            .redeliveryDelay(1000)
+            .backOffMultiplier(2)
+            .useOriginalMessage()
+            .useExponentialBackOff());
 		
-		//get related_topic
-		
-		
-		//override topic with header
-//		.setHeader(KafkaConstants.OVERRIDE_TOPIC)
-		;
-    
     }
 }

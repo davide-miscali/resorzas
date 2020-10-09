@@ -1,0 +1,34 @@
+#Kafka 
+kafka:
+  bootstrap:
+    url: localhost:9092,localhost:9093,localhost:9094
+  default-topic: gpl.default
+
+#Consumer endpoint
+consumer:
+  group: kafka-spool
+  maxPollRecords: 5000
+  topic: test.topic
+
+routingmap:
+  jsonpathInputKey: $.depot_code
+  defaultDestination: default.dest
+  destinations:
+    -
+      regex: 1.*
+      out:   first.dest
+    -
+      regex: 2.*
+      out:   second.dest
+    -
+      regex: 3.*
+      out:   third.dest
+
+logging:
+  level:
+    root: TRACE
+partitionValue: 0
+period: 1000
+
+server:
+  port: 7381

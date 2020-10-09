@@ -1,0 +1,236 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: gpl-integration-template
+  
+parameters:
+- description: Git Source Repository
+  name: SOURCE_REPOSITORY
+  value: http://gitlab.rete.poste/gpl/quintiq/dynamic_routing/lp.git
+  required: true
+- description: Git Source reference
+  name: SOURCE_REF
+  value: feature/integration
+  required: true
+- description: Country Service data directory
+  name: DATA_DIRECTORY
+  value: /gpl/data
+  required: true
+  
+objects:
+  #BuildConfig
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: gpl-integration-s2i
+      application: integrations
+      template: gpl-integration-s2i
+      xpaas: 1.4.14
+    name: gpl-kafka-to-file
+    namespace: gpl-integration
+ 
+  spec:
+    failedBuildsHistoryLimit: 5
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'gpl-kafka-to-file:latest'
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: ${SOURCE_REF}
+        uri: ${SOURCE_REPOSITORY}
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: MAVEN_ARGS_APPEND
+          value: -pl kafka-to-file-connector --also-make
+        - name: ARTIFACT_DIR
+          value: kafka-to-file-connector/target/
+        - name: MODULE_DIR
+          value: kafka-to-file-connector
+        from:
+          kind: ImageStreamTag
+          name: 'java:8'
+          namespace: openshift
+      type: Source
+    successfulBuildsHistoryLimit: 5
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+    - type: ConfigChange
+  status: {}
+
+#DeploymentConfig
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: kafka-to-file
+      application: kafka-to-file
+      template: gpl-integration-s2i
+      xpaas: 1.4.14
+    name: kafka-to-file
+    namespace: gpl-integration
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      deploymentConfig: integrations
+    strategy:
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        timeoutSeconds: 600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          application: kafka-to-file
+          deploymentConfig: kafka-to-file
+        name: kafka-to-file
+      spec:
+        containers:
+          - image: integrations
+            imagePullPolicy: Always
+            name: integrations
+            ports:
+              - containerPort: 8778
+                name: jolokia
+                protocol: TCP
+              - containerPort: 8080
+                name: http
+                protocol: TCP
+              - containerPort: 8443
+                name: https
+                protocol: TCP
+            resources: {}
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 75
+    test: false
+    triggers:
+      - imageChangeParams:
+          automatic: true
+          containerNames:
+            - integrations
+          from:
+            kind: ImageStreamTag
+            name: 'integrations:latest'
+            namespace: gpl-integration
+        type: ImageChange
+      - type: ConfigChange
+  status:
+    availableReplicas: 0
+    conditions:
+      - lastTransitionTime: '2020-09-29T09:06:44Z'
+        lastUpdateTime: '2020-09-29T09:06:44Z'
+        message: Deployment config does not have minimum availability.
+        status: 'False'
+        type: Available
+    latestVersion: 0
+    observedGeneration: 1
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+
+
+#ImageStream
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    creationTimestamp: '2020-09-29T09:06:44Z'
+    generation: 1
+    labels:
+      app: gpl-integration-s2i
+      application: integrations
+      template: gpl-integration-s2i
+      xpaas: 1.4.14
+    name: integrations
+    namespace: gpl-integration
+    resourceVersion: '157930280'
+    selfLink: >-
+      /apis/image.openshift.io/v1/namespaces/gpl-integration/imagestreams/integrations
+    uid: 18aa42b2-0233-11eb-bb24-00505683119b
+  spec:
+    lookupPolicy:
+      local: false
+  status:
+    dockerImageRepository: 'docker-registry.default.svc:5000/gpl-integration/integrations'
+
+  #Service    
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The application's http port.
+    creationTimestamp: '2020-09-29T09:06:44Z'
+    labels:
+      app: gpl-integration-s2i
+      application: integrations
+      template: gpl-integration-s2i
+      xpaas: 1.4.14
+    name: integrations
+    namespace: gpl-integration
+    resourceVersion: '157930276'
+    selfLink: /api/v1/namespaces/gpl-integration/services/integrations
+    uid: 189747b9-0233-11eb-bb24-00505683119b
+  spec:
+    ports:
+      - port: 8080
+        protocol: TCP
+        targetPort: 8080
+    selector:
+      deploymentConfig: integrations
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+  
+  #Route  
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    annotations:
+      description: Route for application's http service.
+      openshift.io/host.generated: 'true'
+    creationTimestamp: '2020-09-29T09:06:44Z'
+    labels:
+      app: gpl-integration-s2i
+      application: integrations
+      template: gpl-integration-s2i
+      xpaas: 1.4.14
+    name: integrations
+    namespace: gpl-integration
+    resourceVersion: '157930279'
+    selfLink: /apis/route.openshift.io/v1/namespaces/gpl-integration/routes/integrations
+    uid: 18a06009-0233-11eb-bb24-00505683119b
+  spec:
+    host: integrations-gpl-integration.app.svil2.ocprm.testposte
+    to:
+      kind: Service
+      name: integrations
+      weight: 100
+    wildcardPolicy: None
+  status:
+    ingress:
+      - conditions:
+          - lastTransitionTime: '2020-09-29T09:06:44Z'
+            status: 'True'
+            type: Admitted
+        host: integrations-gpl-integration.app.svil2.ocprm.testposte
+        routerName: router
+        wildcardPolicy: None

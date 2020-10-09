@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gpl-k2f-config
+data:
+  application.properties: |-
+    kafka.bootstrap.url=10.60.36.7:9092,10.60.36.11:9093,10.60.36.12:9094
+
+    # Consumer properties 
+    consumer.topic=gpl.test
+    consumer.group=kafka-spool
+    consumer.maxPollRecords=5000
+    partitionValue=0
+    period=1000
+    
+    # Spooling Directory
+    consumer.spool-path=file://C:/temp/myDirectory666-666
+    
+    #LOG LEVEL
+    logging.level.root=INFO
+    
+    # logging.level.root=TRACE
+    # server.port=7381
